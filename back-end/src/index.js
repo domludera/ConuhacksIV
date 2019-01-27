@@ -11,7 +11,15 @@ app.get('/', (req, res) =>{
 })
 
 app.get('/position/:name', (req, res) => {
-    DistanceModel.find({name: req.params.name}).then(doc => {
+    var dbQuery = {name: req.params.name};
+    if(!!req.query.startDate && !!req.query.endDate){
+        dbQuery.date = {
+            $gte: req.query.startDate,
+            $lte: req.query.endDate
+        }
+    }
+
+    DistanceModel.find(dbQuery).then(doc => {
         res.json(doc);
     }).catch(err => {
         res.status(500).json(err);
