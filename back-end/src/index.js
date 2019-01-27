@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const distance = require('gps-distance');
 let bodyParser = require('body-parser');
 
 let DistanceModel = require('./models/distance.model');
@@ -9,6 +10,16 @@ app.use(bodyParser.json());
 app.get('/', (req, res) =>{
     res.send('hey');
 })
+
+// app.get('/position/:name/lastmonth', (req, res) => {
+//     DistanceModel.find({name: req.params.name}).then(doc => {
+
+
+//         res.json(doc);
+//     }).catch(err => {
+//         res.status(500).json(err);
+//     })
+// })
 
 app.get('/position/:name', (req, res) => {
     var dbQuery = {name: req.params.name};
@@ -29,7 +40,7 @@ app.get('/position/:name', (req, res) => {
 
 app.post('/position', (req, res) => {
     // && !req.body.date && !req.body.position
-    if(!req.body.name || !req.body.medium || !req.body.date || !req.body.position) return res.status(400).send('There is data not send');
+    if(!req.body.name || !req.body.medium || !req.body.date || !req.body.coords) return res.status(400).send('There is data not send');
 
     
 
@@ -38,7 +49,7 @@ app.post('/position', (req, res) => {
         medium: req.body.medium,
         date: req.body.date
     }
-    distance.distance = distanceCalculator();
+    distance.distance = getDist(req.body);
 
 
     let model = new DistanceModel(distance);
@@ -53,8 +64,13 @@ app.post('/position', (req, res) => {
 
 })
 
-function distanceCalculator(){
-    return 3.3123214124123122;
+function getDist(json){
+    let arr = [];
+    
+	for(let i=0;i<(json.coords).length;i++){
+		arr.push([json.coords[i].lat, json.coords[i].long]);
+    }
+    return distance(arr);
 }
 
 // PORT
